@@ -1,0 +1,230 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: linear-gradient(116deg, #000000, #7c0015);
+    font-family: 'Poppins', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.container {
+    text-align: center;
+    width: 90%;
+    max-width: 600px;
+}
+
+header h1 {
+    color: #fff;
+    text-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+    margin-bottom: 20px;
+    font-size: 2.5rem;
+}
+
+.scores {
+    display: flex;
+    justify-content: space-between;
+    color: #fff;
+    margin-bottom: 10px;
+    font-size: 1.2rem;
+}
+
+#board {
+    background: radial-gradient(circle at center, #d8f3dc, #95d5b2);
+    width: 400px;
+    height: 400px;
+    border: 5px solid #fff;
+    display: grid;
+    grid-template-columns: repeat(20, 1fr);
+    grid-template-rows: repeat(20, 1fr);
+    border-radius: 15px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    margin: 0 auto;
+    position: relative;
+}
+
+.head {
+    background: linear-gradient(145deg, #ff6f61, #ff3b3b);
+    border-radius: 50%;
+    box-shadow: 0 0 10px rgba(255, 61, 61, 0.8);
+}
+
+.snake {
+    background: linear-gradient(145deg, #6a4f9a, #b083f9);
+    border-radius: 10%;
+}
+
+.food {
+    background: linear-gradient(145deg, #f7a400, #ff6b00);
+    border-radius: 50%;
+    box-shadow: 0 0 15px rgba(255, 107, 0, 0.8);
+}
+
+.controls {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.controls button {
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 50%;
+    font-size: 1.5rem;
+    cursor: pointer;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s ease;
+}
+
+.controls button:hover {
+    transform: scale(1.1);
+}
+
+#levelBox, #timerBox {
+    position: absolute;
+    top: 10vmin;
+    font-size: 2vmin;
+    font-weight: bold;
+    font-family: 'New Tegomin', serif;
+    color: #fff;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+    right: 5vmin;
+}
+
+#timerBox {
+    top: 15vmin;
+}
+
+#soundToggle {
+    position: absolute;
+    top: 20vmin;
+    right: 5vmin;
+    background-color: #333;
+    color: white;
+    font-size: 1.2rem;
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+}
+
+.obstacle {
+    background: linear-gradient(45deg, #ff3d00, #d50000);
+    border: 2px solid black;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.8);
+}
+
+
+
+/* Board and Grid Styling */
+#board {
+    display: grid;
+    grid-template-columns: repeat(20, 20px);
+    grid-template-rows: repeat(20, 20px);
+    gap: 0;
+    width: 400px;
+    height: 400px;
+    border: 1px solid black;
+    position: relative;
+  }
+  
+  .snake {
+    background-color: green;
+    width: 100%;
+    height: 100%;
+  }
+  
+  .head {
+    background-color: darkgreen;
+  }
+  
+  .food {
+    background-color: red;
+    width: 100%;
+    height: 100%;
+  }
+  
+  .obstacle {
+    background-color: gray;
+    width: 100%;
+    height: 100%;
+  }
+  
+  .powerup {
+    background-color: gold;
+    width: 100%;
+    height: 100%;
+  }
+  
+  .dark {
+    background-color: #333;
+    color: white;
+  }
+  
+  /* Other UI Controls */
+  #scoreBox, #hiscoreBox, #timerBox {
+    font-size: 20px;
+  }
+  
+  /* Buttons Styling */
+  button {
+    margin: 5px;
+    padding: 10px;
+    font-size: 16px;
+  }
+  
+  select {
+    margin: 5px;
+    font-size: 16px;
+  }
+  
+
+
+
+/* Add a "dark theme" */
+body.dark {
+    background: linear-gradient(135deg, #1e1e2f, #282828);
+}
+
+#board.dark {
+    background: radial-gradient(circle at center, #444, #222);
+}
+
+/* Add styles for power-ups and obstacles */
+.powerup {
+    background: radial-gradient(circle at center, #ffd700, #ff4500);
+    border-radius: 50%;
+    box-shadow: 0 0 15px rgba(255, 200, 0, 0.8);
+}
+
+.obstacle {
+    background: linear-gradient(145deg, #444, #222);
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+}
+
+/* Actions button styles */
+.actions button {
+    background-color: #f8a531;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    margin: 5px;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+}
