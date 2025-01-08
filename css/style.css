@@ -84,7 +84,7 @@ header h1 {
 
 #soundToggle {
     position: absolute;
-    top: 20vmin;
+    top: 20in;
     right: 5vmin;
     background-color: #333;
     color: white;
@@ -292,7 +292,7 @@ header h1 {
 
 #soundToggle {
     position: absolute;
-    top: 20vmin;
+    top: 27min;
     right: 5vmin;
     background-color: #333;
     color: white;
@@ -398,4 +398,8 @@ body.dark {
     #levelBox, #timerBox {
         font-size: 1vmin;
     }
+}
+
+#levelBox, #timerBox {
+    font-size: 5vmin;
 }
