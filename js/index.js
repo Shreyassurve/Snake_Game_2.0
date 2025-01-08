@@ -259,5 +259,56 @@ window.addEventListener('keydown', e => {
     }
 });
 
+// Gesture Variables
+let touchStartX = 0;
+let touchStartY = 0;
+let touchEndX = 0;
+let touchEndY = 0;
+
+// Add event listeners for touch gestures
+board.addEventListener('touchstart', handleTouchStart, false);
+board.addEventListener('touchmove', handleTouchMove, false);
+board.addEventListener('touchend', handleTouchEnd, false);
+
+// Touch start event
+function handleTouchStart(e) {
+    const touch = e.touches[0];
+    touchStartX = touch.clientX;
+    touchStartY = touch.clientY;
+}
+
+// Touch move event (optional for live feedback, not used here)
+function handleTouchMove(e) {
+    const touch = e.touches[0];
+    touchEndX = touch.clientX;
+    touchEndY = touch.clientY;
+}
+
+// Touch end event
+function handleTouchEnd() {
+    const deltaX = touchEndX - touchStartX;
+    const deltaY = touchEndY - touchStartY;
+
+    if (Math.abs(deltaX) > Math.abs(deltaY)) {
+        // Horizontal swipe
+        if (deltaX > 0 && inputDir.x !== -1) {
+            inputDir = { x: 1, y: 0 }; // Swipe right
+        } else if (deltaX < 0 && inputDir.x !== 1) {
+            inputDir = { x: -1, y: 0 }; // Swipe left
+        }
+    } else {
+        // Vertical swipe
+        if (deltaY > 0 && inputDir.y !== -1) {
+            inputDir = { x: 0, y: 1 }; // Swipe down
+        } else if (deltaY < 0 && inputDir.y !== 1) {
+            inputDir = { x: 0, y: -1 }; // Swipe up
+        }
+    }
+
+    // Reset touch coordinates
+    touchStartX = touchStartY = touchEndX = touchEndY = 0;
+}
+
+
 // Start Game
 window.requestAnimationFrame(main);
