@@ -15,27 +15,23 @@
                 <div id="scoreBox">Score: 0</div>
                 <div id="hiscoreBox">HiScore: 0</div>
                 <div id="levelBox">Level: 1</div>
-        <div id="timerBox">Time: 60s</div>
+                <div id="timerBox">Time: 60s</div>
+                <div id="livesBox">Lives: 3</div>
+
             </div>
             <div class="actions">
                 <button id="pause">Pause</button>
                 <button id="restart">Restart</button>
                 <button id="theme">Change Theme</button>
                 <button id="soundToggle">Sound On</button>
-                
             </div>
-            
+            <select id="difficulty">
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+            </select>
         </header>
         <div id="board"></div>
-        <div class="controls">
-            <button id="up">↑</button>
-            <div>
-                <button id="left">←</button>
-                <button id="right">→</button>
-            </div>
-            <button id="down">↓</button>
-        </div>
-    </div>
-    <script src="js/index.js"></script>
+        <script src="js/index.js"></script>
 </body>
 </html>
