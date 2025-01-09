@@ -29,6 +29,8 @@ hiscoreBox.textContent = "HiScore: " + hiscore;
 
 // Timer Handling
 let timerInterval = setInterval(updateTimer, 1000);
+
+// Update the timer with the selected difficulty setting
 function updateTimer() {
     if (!isPaused) {
         if (timer <= 0) {
@@ -36,11 +38,8 @@ function updateTimer() {
             score += 10; // Bonus for completing a level
             scoreBox.textContent = "Score: " + score;
 
-            // Generate new obstacles for the next level
-            generateObstacles(level);
-
             // Reset timer
-            timer = 60;
+            timer = currentSettings.timer;
             timerBox.textContent = "Time: " + timer + "s";
 
             // Increase speed for higher difficulty
@@ -69,14 +68,69 @@ document.getElementById('pause').addEventListener('click', togglePause);
 document.getElementById('restart').addEventListener('click', restartGame);
 document.getElementById('theme').addEventListener('click', toggleTheme);
 
-// Function to toggle pause
-function togglePause() {
-    isPaused = !isPaused;
-    const pauseButton = document.getElementById('pause');
-    pauseButton.textContent = isPaused ? "Resume" : "Pause";
-    if (!isPaused) {
-        main(performance.now()); // Resume game if it's paused
+// Difficulty Settings with Fixed Obstacles
+let difficultySettings = {
+    easy: {
+        speed: 6,
+        obstacleFrequency: 0.1, // 10% chance of obstacle generation
+        obstacleCount: 2, // Fixed 2 obstacles for easy mode
+        powerupFrequency: 0.2, // 20% chance of power-up generation
+        timer: 900, // More time on easy mode
+    },
+    medium: {
+        speed: 8,
+        obstacleFrequency: 0.3, // 30% chance of obstacle generation
+        obstacleCount: 4, // Fixed 4 obstacles for medium mode
+        powerupFrequency: 0.3, // 30% chance of power-up generation
+        timer: 600, // Standard time
+    },
+    hard: {
+        speed: 10,
+        obstacleFrequency: 0.5, // 50% chance of obstacle generation
+        obstacleCount: 6, // Fixed 6 obstacles for hard mode
+        powerupFrequency: 0.5, // 50% chance of power-up generation
+        timer: 300, // Less time on hard mode
     }
+};
+
+// Set initial game settings to medium difficulty
+let currentDifficulty = "medium";
+let currentSettings = difficultySettings[currentDifficulty];
+
+// Update game settings when difficulty changes
+document.getElementById('difficulty').addEventListener('change', (e) => {
+    currentDifficulty = e.target.value;
+    currentSettings = difficultySettings[currentDifficulty];
+    resetGameForNewDifficulty();
+});
+
+// Reset game for new difficulty
+function resetGameForNewDifficulty() {
+    speed = currentSettings.speed;
+    timer = currentSettings.timer;
+    score = 0;
+    level = 1;
+    snakeArr = [{ x: 10, y: 10 }];
+    food = generateFood();
+    obstacles = generateObstacles(level);  // Generate a fixed number of obstacles based on difficulty
+    powerup = null;
+
+    scoreBox.textContent = "Score: " + score;
+    timerBox.textContent = "Time: " + timer + "s";
+    updateLivesDisplay();
+
+    renderBoard(); // Force render of game state when resetting game
+    main(performance.now()); // Start the game loop
+}
+
+// Generate Obstacles based on the current difficulty
+function generateObstacles(level) {
+    let newObstacles = [];
+    let obstacleCount = currentSettings.obstacleCount; // Get fixed obstacle count based on difficulty
+    for (let i = 0; i < obstacleCount; i++) {
+        newObstacles.push(generateFood()); // Generate obstacles at random positions
+    }
+    return newObstacles;
 }
 
 // Function to restart the game
@@ -86,7 +140,7 @@ function restartGame() {
     score = 0;
     lives = 3; // Reset lives
     isPaused = false;
-    timer = 600;// Reset timer
+    timer = 600; // Reset timer
     level = 1; // Reset level
     snakeArr = [{ x: 10, y: 10 }]; // Reset snake
     food = { x: Math.floor(Math.random() * 20), y: Math.floor(Math.random() * 20) }; // Reset food
@@ -97,6 +151,7 @@ function restartGame() {
     timerBox.textContent = "Time: " + timer + "s"; // Update timer display
     updateLivesDisplay(); // Update lives display
 
+    renderBoard(); // Force render of game state when restarting
     main(performance.now()); // Restart game loop
 }
 
@@ -104,10 +159,9 @@ function restartGame() {
 function toggleTheme() {
     currentTheme = currentTheme === "light" ? "dark" : "light";
     document.body.classList.toggle("dark");
+    document.body.classList.toggle("light");
     document.getElementById('theme').textContent = currentTheme === "light" ? "Dark Theme" : "Light Theme";
 }
-
-
 
 // Collision Check
 function isCollide() {
@@ -189,32 +243,27 @@ function gameEngine() {
     renderBoard();
 }
 
-// Render Game Elements
+// Function to render the game elements on the board
 function renderBoard() {
-    board.innerHTML = '';
+    board.innerHTML = ''; // Clear the board before rendering again
 
+    // Render Snake
     snakeArr.forEach((segment, index) => {
         const snakeElement = document.createElement('div');
         snakeElement.style.gridRowStart = segment.y + 1;
         snakeElement.style.gridColumnStart = segment.x + 1;
-        snakeElement.classList.add(index === 0 ? 'head' : 'snake');
+        snakeElement.classList.add(index === 0 ? 'head' : 'snake'); // Make the head different
         board.appendChild(snakeElement);
     });
 
+    // Render Food
     const foodElement = document.createElement('div');
     foodElement.style.gridRowStart = food.y + 1;
     foodElement.style.gridColumnStart = food.x + 1;
     foodElement.classList.add('food');
     board.appendChild(foodElement);
 
-    if (powerup) {
-        const powerupElement = document.createElement('div');
-        powerupElement.style.gridRowStart = powerup.y + 1;
-        powerupElement.style.gridColumnStart = powerup.x + 1;
-        powerupElement.classList.add('powerup');
-        board.appendChild(powerupElement);
-    }
-
+    // Render Obstacles
     obstacles.forEach(obs => {
         const obsElement = document.createElement('div');
         obsElement.style.gridRowStart = obs.y + 1;
@@ -224,16 +273,24 @@ function renderBoard() {
     });
 }
 
-// Obstacle Generation
-function generateObstacles(level) {
-    let newObstacles = [];
-    for (let i = 0; i < level; i++) {
-        newObstacles.push(generateFood());
-    }
-    return newObstacles;
+// Game restart and reset function
+function restartGame() {
+    inputDir = { x: 0, y: 0 }; // Reset direction
+    score = 0; // Reset score
+    lives = 3; // Reset lives
+    timer = 600; // Reset timer
+    level = 1; // Reset level
+    snakeArr = [{ x: 10, y: 10 }]; // Reset snake position
+    food = generateFood(); // Generate new food
+    obstacles = generateObstacles(level); // Generate obstacles
+    scoreBox.textContent = "Score: " + score;
+    timerBox.textContent = "Time: " + timer + "s";
+    updateLivesDisplay(); // Update lives display
+    renderBoard(); // Render the board with initial game state
+    main(performance.now()); // Start the game loop
 }
 
-// Generate Random Food
+// Generate a random position for the food (ensuring it doesn't overlap with the snake or obstacles)
 function generateFood() {
     let newFood;
     do {
@@ -248,9 +305,24 @@ function generateFood() {
     return newFood;
 }
 
-// Event Listeners for Controls
+// Function to generate obstacles based on the level
+function generateObstacles(level) {
+    let newObstacles = [];
+    let obstacleCount = 2 * level; // Increase obstacles with each level
+    for (let i = 0; i < obstacleCount; i++) {
+        newObstacles.push(generateFood());
+    }
+    return newObstacles;
+}
+
+// Update the display of the lives
+function updateLivesDisplay() {
+    livesBox.textContent = "Lives: " + lives;
+}
+
+// Event listeners for user control (e.g., arrow keys for movement)
 window.addEventListener('keydown', e => {
-    if (isPaused) return;
+    if (isPaused) return; // Prevent movement if game is paused
     switch (e.key) {
         case 'ArrowUp': inputDir = { x: 0, y: -1 }; break;
         case 'ArrowDown': inputDir = { x: 0, y: 1 }; break;
@@ -259,56 +331,42 @@ window.addEventListener('keydown', e => {
     }
 });
 
-// Gesture Variables
 let touchStartX = 0;
 let touchStartY = 0;
-let touchEndX = 0;
-let touchEndY = 0;
 
-// Add event listeners for touch gestures
-board.addEventListener('touchstart', handleTouchStart, false);
-board.addEventListener('touchmove', handleTouchMove, false);
-board.addEventListener('touchend', handleTouchEnd, false);
+// Track touch start position
+window.addEventListener('touchstart', (e) => {
+    // Get touch start position
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+});
 
-// Touch start event
-function handleTouchStart(e) {
-    const touch = e.touches[0];
-    touchStartX = touch.clientX;
-    touchStartY = touch.clientY;
-}
+// Track touch end position and detect swipe direction
+window.addEventListener('touchend', (e) => {
+    let touchEndX = e.changedTouches[0].clientX;
+    let touchEndY = e.changedTouches[0].clientY;
 
-// Touch move event (optional for live feedback, not used here)
-function handleTouchMove(e) {
-    const touch = e.touches[0];
-    touchEndX = touch.clientX;
-    touchEndY = touch.clientY;
-}
+    let diffX = touchEndX - touchStartX;
+    let diffY = touchEndY - touchStartY;
 
-// Touch end event
-function handleTouchEnd() {
-    const deltaX = touchEndX - touchStartX;
-    const deltaY = touchEndY - touchStartY;
-
-    if (Math.abs(deltaX) > Math.abs(deltaY)) {
+    // Check for swipe direction
+    if (Math.abs(diffX) > Math.abs(diffY)) {
         // Horizontal swipe
-        if (deltaX > 0 && inputDir.x !== -1) {
-            inputDir = { x: 1, y: 0 }; // Swipe right
-        } else if (deltaX < 0 && inputDir.x !== 1) {
-            inputDir = { x: -1, y: 0 }; // Swipe left
+        if (diffX > 0) {
+            inputDir = { x: 1, y: 0 }; // Right
+        } else {
+            inputDir = { x: -1, y: 0 }; // Left
         }
     } else {
         // Vertical swipe
-        if (deltaY > 0 && inputDir.y !== -1) {
-            inputDir = { x: 0, y: 1 }; // Swipe down
-        } else if (deltaY < 0 && inputDir.y !== 1) {
-            inputDir = { x: 0, y: -1 }; // Swipe up
+        if (diffY > 0) {
+            inputDir = { x: 0, y: 1 }; // Down
+        } else {
+            inputDir = { x: 0, y: -1 }; // Up
         }
     }
-
-    // Reset touch coordinates
-    touchStartX = touchStartY = touchEndX = touchEndY = 0;
-}
+});
 
 
-// Start Game
-window.requestAnimationFrame(main);
+// Game start logic
+restartGame();
