@@ -334,9 +334,9 @@ body.dark {
 
 /* Add styles for power-ups and obstacles */
 .powerup {
-    background: radial-gradient(circle at center, #ffd700, #ff4500);
+    background: radial-gradient(circle at center, #a79a5500, #6e00ff);
     border-radius: 50%;
-    box-shadow: 0 0 15px rgba(255, 200, 0, 0.8);
+    box-shadow: 0 0 15px rgb(0 55 255 / 80%);
 }
 
 .obstacle {
@@ -402,4 +402,96 @@ body.dark {
 
 #levelBox, #timerBox {
     font-size: 5vmin;
+}
+
+.powerup {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.7);
+    transition: transform 0.3s;
+}
+
+.powerup.speed {
+    background-color: #42a5f5,#f8a531/* Blue for speed */
+}
+
+.powerup.invincibility {
+    background-color: #fdd835,#26a69a; /*yellow for invincibility */
+}
+
+.powerup.bonus {
+    background-color: #ab47bc,#d50000; /* Purple for bonus points */
+}
+
+.powerup.extraLife {
+    background-color: #ff7043, #bbff00; /* Orange for extra life */
+}
+
+.powerup.freeze {
+    background-color: #26a69a, #1e1e2f; /* Teal for freeze */
+}
+
+.powerup.time {
+    background-color: #8e24aa, #333; /* Dark purple for time */
+}
+
+/* Add CSS for snake shapes */
+.snake {
+    width: 20px;
+    height: 20px;
+}
+
+.head {
+    background-color: #3cb371;
+}
+
+.square {
+    border-radius: 0;
+}
+
+.circle {
+    border-radius: 50%;
+}
+
+.hexagon {
+    width: 30px;
+    height: 30px;
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+}
+
+/* Customize Snake Color */
+.green {
+    background-color: green;
+}
+
+.blue {
+    background-color: blue;
+}
+
+.red {
+    background-color: red;
+}
+
+.yellow {
+    background-color: yellow;
+}
+
+.purple {
+    background-color: purple;
+}
+
+.orange {
+    background-color: orange;
+}
+
+/* Optional: Add a scaling effect for double size */
+.snake {
+    transition: transform 0.1s ease-in-out;
+}
+#board {
+    width: 90%; /* 90% of the screen width */
+    max-width: 400px; /* Prevent exceeding 400px on larger screens */
+    height: auto;
+    aspect-ratio: 1; /* Keep a 1:1 ratio for the board */
 }
