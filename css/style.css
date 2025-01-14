@@ -37,11 +37,12 @@ body.light {
 
 /* Header Styling */
 header h1 {
-    color: #fff;
-    text-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+    color: #ff0000;
+    background: #00000096;
+    text-shadow: 0 27px 40px rgb(0 0 0);
     margin-bottom: 30px;
-    font-size: 3rem;
-    font-weight: 700;
+    font-size: 2rem;
+    font-weight: 300;
     text-transform: uppercase;
 }
 
@@ -51,11 +52,11 @@ body.dark header h1 {
 }
 
 body.light header h1 {
-    color: #333;
+    color: #e3cfcf;
     text-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
 }
 
-/* Scores & Actions */
+/* Scores */
 .scores {
     display: flex;
     justify-content: space-between;
@@ -64,12 +65,24 @@ body.light header h1 {
     font-size: 1.5rem;
     font-weight: 600;
     text-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+    align-items: center;
+    flex-wrap: wrap;
+    flex-direction: row;
 }
 
 body.dark .scores,
 body.light .scores {
     color: #333;
     text-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+}
+
+/* Score Display */
+.score-display {
+    color: white;
+    font-size: 1.8rem;
+    font-weight: 600;
+    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+    margin-top: 15px;
 }
 
 /* Action Buttons */
@@ -95,19 +108,15 @@ body.light .scores {
     opacity: 1;
     visibility: visible;
     display: flex;
-    flex-direction: row;
-    gap: 10px;
-    align-content: center;
-    align-items: center;
-    justify-content: space-evenly;
-    flex-wrap: wrap;
+    flex-direction: row-reverse;
+    gap: 4px;
 }
 
 .actions button {
     background-color: #f8a531;
     color: white;
     border: none;
-    padding: 12px 18px;
+    padding: 5px 8px;
     border-radius: 8px;
     font-size: 1.1rem;
     cursor: pointer;
@@ -147,7 +156,7 @@ body.light .scores {
 
 /* Board Styling */
 #board {
-    background: radial-gradient(circle, #fdfbfb, #000000);
+    background: radial-gradient(circle, #fdfdfd, #afafaf);
     width: 400px;
     height: 400px;
     border: 8px solid #fff;
@@ -183,21 +192,47 @@ body.light .scores {
     border-radius: 5px;
 }
 
-/* Game Over Screen */
-#gameOverScreen {
-    display: none;
-    position: fixed;
+/* Style for the game over screen */
+.game-over-screen {
+    display: none; /* Initially hidden */
+    position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.8);
+    background-color: rgba(0, 0, 0, 0.8); /* Semi-transparent black */
     color: white;
-    text-align: center;
-    align-items: center;
+    font-family: 'Arial', sans-serif;
     justify-content: center;
-    transition: opacity 0.5s ease;
+    align-items: center;
+    flex-direction: column;
+    z-index: 10;
 }
+
+/* Style for the Game Over text */
+.game-over-text {
+    font-size: 3rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+    text-shadow: 0 0 10px #ff0000;
+}
+
+/* Style for the final score text */
+.final-score {
+    font-size: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+/* Style for particle effects container (if used) */
+#particles {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none; /* Disable interaction */
+}
+
 
 #gameOverScreen.show {
     display: flex;
