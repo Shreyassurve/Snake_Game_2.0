@@ -26,6 +26,8 @@ const livesBox = document.getElementById('livesBox');
 const restartBtn = document.getElementById('restart');
 const pauseBtn = document.getElementById('pause');
 const themeBtn = document.getElementById('theme');
+const gameOverScreen = document.getElementById('gameOverScreen');
+
 
 // Hamburger menu toggle functionality
 const hamburger = document.querySelector('.hamburger');
@@ -161,9 +163,6 @@ function generateObstacles(level) {
     return newObstacles;
 }
 
-
-// }
-
 // Function to toggle theme
 function toggleTheme() {
     currentTheme = currentTheme === "light" ? "dark" : "light";
@@ -187,8 +186,20 @@ function isCollide() {
 }
 
 function updateLivesDisplay() {
+    console.log("Lives updated:", lives);  // Debugging line
     livesBox.textContent = "Lives: " + lives;
 }
+
+function gameOver() {
+    console.log("Game Over triggered");  // Debugging line
+    gameOverScreen.style.display = 'flex';
+    isPaused = true;
+    window.removeEventListener('keydown', handleMovement);
+    setTimeout(() => {
+        restartGame();
+    }, 2000);
+}
+
 
 // Main Game Function
 function main(currentTime) {
@@ -199,15 +210,14 @@ function main(currentTime) {
     gameEngine();
 }
 
-// Game Engine
+/// Game Engine
 function gameEngine() {
     if (isCollide()) {
         lives--;
         updateLivesDisplay();
         
         if (lives === 0) {
-            alert("Game Over! Your Score: " + score);
-            location.reload();
+            gameOver();
         }
         
         snakeArr = [{ x: 10, y: 10 }];
@@ -245,6 +255,7 @@ function gameEngine() {
         scoreBox.textContent = "Score: " + score;
     }
 
+    // Move the snake
     for (let i = snakeArr.length - 2; i >= 0; i--) {
         snakeArr[i + 1] = { ...snakeArr[i] };
     }
@@ -254,97 +265,47 @@ function gameEngine() {
     renderBoard();
 }
 
-function gameOver() {
-    document.getElementById('finalScore').textContent = score;
+// Add Event Listener for Movement
+document.addEventListener('keydown', handleMovement);
 
-    const gameOverScreen = document.getElementById('gameOverScreen');
-    gameOverScreen.style.display = 'flex';
-    document.body.style.overflow = 'hidden';
-
-    if (growthPowerup && snakeArr[0].x === growthPowerup.x && snakeArr[0].y === growthPowerup.y) {
-        for (let i = 0; i < growthMultiplier; i++) {
-            snakeArr.unshift({ ...snakeArr[0] });
-        }
-        growthPowerup = null;
-    
-        score += 10;
-        scoreBox.textContent = "Score: " + score;
-    
-        // Trigger particle effect at the powerup position
-        generateParticles({
-            x: growthPowerup.x * 20, // Adjust to your grid size
-            y: growthPowerup.y * 20,
-        });
-    
-        if (score > hiscore) {
-            hiscore = score;
-            localStorage.setItem("hiscore", hiscore);
-            hiscoreBox.textContent = "HiScore: " + hiscore;
-        }
-    }    
-}    
-
-function generateParticles() {
-    const particlesContainer = document.getElementById('particles');
-    const numParticles = 30;
-
-    // Clear any previous particles
-    particlesContainer.innerHTML = '';
-
-    for (let i = 0; i < numParticles; i++) {
-        const particle = document.createElement('div');
-        particle.classList.add('particle');
-
-        // Randomize position
-        particle.style.left = `${Math.random() * window.innerWidth}px`;
-        particle.style.top = `${Math.random() * window.innerHeight}px`;
-
-        // Randomize size
-        particle.style.width = `${Math.random() * 10 + 5}px`;
-        particle.style.height = `${Math.random() * 10 + 5}px`;
-
-        // Add animation delay for a natural spread
-        particle.style.animationDelay = `${Math.random() * 0.5}s`;
-
-        // Append particle to the container
-        particlesContainer.appendChild(particle);
-
-        // Automatically remove the particle after animation ends
-        setTimeout(() => particle.remove(), 1000); // Matches animation duration
+// Handle Snake Direction
+function handleMovement(event) {
+    // Prevent opposite direction from being pressed (e.g., if moving right, don't allow left)
+    if (event.key === "ArrowUp" && inputDir.y !== 1) {
+        inputDir = { x: 0, y: -1 };
+    } else if (event.key === "ArrowDown" && inputDir.y !== -1) {
+        inputDir = { x: 0, y: 1 };
+    } else if (event.key === "ArrowLeft" && inputDir.x !== 1) {
+        inputDir = { x: -1, y: 0 };
+    } else if (event.key === "ArrowRight" && inputDir.x !== -1) {
+        inputDir = { x: 1, y: 0 };
     }
 }
 
-// Function to remove particles explicitly if needed
-function removeParticles() {
-    const particlesContainer = document.getElementById('particles');
-    particlesContainer.innerHTML = ''; // Clear all particles
-}
 
-// Trigger particle effect at Game Over
+// Function to display the Game Over screen
 function gameOver() {
-    // Display Game Over screen
-    const gameOverScreen = document.getElementById('gameOverScreen');
+    // Display the Game Over screen
     gameOverScreen.style.display = 'flex';
+    
+    // Update the final score in the Game Over popup
+    document.getElementById('finalScore').textContent = score;
 
-    // Prevent game interaction
+    // Stop the game
     isPaused = true;
+
+    // Disable key events
     window.removeEventListener('keydown', handleMovement);
 
-    // Generate particles
-    generateParticles();
-
-    // Set restart button to reset the game
-    document.getElementById('restartBtn').addEventListener('click', restartGame);
+    // Optional: Restart game after a delay
+    setTimeout(() => {
+        restartGame();
+    }, 5000); // Restart after 5 seconds
 }
 
-// Call this function to remove past particles explicitly
-function clearParticles() {
-    const particlesContainer = document.getElementById('particles');
-    particlesContainer.innerHTML = '';
-}
-// Function to restart the game
+
+// Game restart and reset function
 function restartGame() {
-    // Reset all game variables and states
     inputDir = { x: 0, y: 0 };
     score = 0;
     lives = 3;
@@ -355,45 +316,28 @@ function restartGame() {
     food = generateFood();
     obstacles = generateObstacles(level);
 
-    // Reset DOM elements
     scoreBox.textContent = "Score: " + score;
     timerBox.textContent = "Time: " + timer + "s";
-    updateLivesDisplay();
+    updateLivesDisplay(); 
     renderBoard();
 
-    // Hide the Game Over screen and restart the game loop
-    document.getElementById('gameOverScreen').style.display = 'none';
-    document.body.style.overflow = 'auto'; // Re-enable scrolling
-    main(performance.now()); // Start the game loop
+    gameOverScreen.style.display = 'none'; // Hide game over screen
+    main(performance.now()); // Restart the game loop
 }
 
-// Function to handle movement (event listener already exists)
-function handleMovement(e) {
-    if (isPaused) return; // Prevent movement if game is paused
-    switch (e.key) {
-        case 'ArrowUp': inputDir = { x: 0, y: -1 }; break;
-        case 'ArrowDown': inputDir = { x: 0, y: 1 }; break;
-        case 'ArrowLeft': inputDir = { x: -1, y: 0 }; break;
-        case 'ArrowRight': inputDir = { x: 1, y: 0 }; break;
-    }
-}
-
-if (growthPowerup && snakeArr[0].x === growthPowerup.x && snakeArr[0].y === growthPowerup.y) {
-    // Snake consumes the growth power-up
-    for (let i = 0; i < growthMultiplier; i++) {
-        snakeArr.unshift({ ...snakeArr[0] }); // Add multiple segments
-    }
-    growthPowerup = null; // Remove the power-up from the board
-
-    // Optional: Increase score or speed as a reward
-    score += 10;
-    scoreBox.textContent = "Score: " + score;
-
-    if (score > hiscore) {
-        hiscore = score;
-        localStorage.setItem("hiscore", hiscore);
-        hiscoreBox.textContent = "HiScore: " + hiscore;
-    }
+// Generate a random position for the food (ensuring it doesn't overlap with the snake or obstacles)
+function generateFood() {
+    let newFood;
+    do {
+        newFood = {
+            x: Math.floor(Math.random() * 20),
+            y: Math.floor(Math.random() * 20),
+        };
+    } while (
+        snakeArr.some(seg => seg.x === newFood.x && seg.y === newFood.y) ||
+        obstacles.some(obs => obs.x === newFood.x && obs.y === newFood.y)
+    );
+    return newFood;
 }
 
 // Function to render the game elements on the board
@@ -417,112 +361,75 @@ function renderBoard() {
     board.appendChild(foodElement);
 
     // Render Obstacles
-    obstacles.forEach(obs => {
-        const obsElement = document.createElement('div');
-        obsElement.style.gridRowStart = obs.y + 1;
-        obsElement.style.gridColumnStart = obs.x + 1;
-        obsElement.classList.add('obstacle');
-        board.appendChild(obsElement);
+    obstacles.forEach((obs) => {
+        const obstacleElement = document.createElement('div');
+        obstacleElement.style.gridRowStart = obs.y + 1;
+        obstacleElement.style.gridColumnStart = obs.x + 1;
+        obstacleElement.classList.add('obstacle');
+        board.appendChild(obstacleElement);
     });
-}
 
-// Game restart and reset function
-function restartGame() {
-    inputDir = { x: 0, y: 0 }; // Reset direction
-    score = 0; // Reset score
-    lives = 3; // Reset lives
-    timer = 600; // Reset timer
-    level = 1; // Reset level
-    snakeArr = [{ x: 10, y: 10 }]; // Reset snake position
-    food = generateFood(); // Generate new food
-    obstacles = generateObstacles(level); // Generate obstacles
-    scoreBox.textContent = "Score: " + score;
-    timerBox.textContent = "Time: " + timer + "s";
-    updateLivesDisplay(); // Update lives display
-    renderBoard(); // Render the board with initial game state
-    main(performance.now()); // Start the game loop
-}
-
-// Generate a random position for the food (ensuring it doesn't overlap with the snake or obstacles)
-function generateFood() {
-    let newFood;
-    do {
-        newFood = {
-            x: Math.floor(Math.random() * 20),
-            y: Math.floor(Math.random() * 20),
-        };
-    } while (
-        snakeArr.some(seg => seg.x === newFood.x && seg.y === newFood.y) ||
-        obstacles.some(obs => obs.x === newFood.x && obs.y === newFood.y)
-    );
-    return newFood;
-}
-
-// Function to generate obstacles based on the level
-function generateObstacles(level) {
-    let newObstacles = [];
-    let obstacleCount = 2 * level; // Increase obstacles with each level
-    for (let i = 0; i < obstacleCount; i++) {
-        newObstacles.push(generateFood());
+    // Render Power-ups
+    if (powerup) {
+        const powerupElement = document.createElement('div');
+        powerupElement.style.gridRowStart = powerup.y + 1;
+        powerupElement.style.gridColumnStart = powerup.x + 1;
+        powerupElement.classList.add('powerup');
+        board.appendChild(powerupElement);
     }
-    return newObstacles;
 }
 
-// Update the display of the lives
-function updateLivesDisplay() {
-    livesBox.textContent = "Lives: " + lives;
-}
-
-// Event listeners for user control (e.g., arrow keys for movement)
-window.addEventListener('keydown', e => {
-    if (isPaused) return; // Prevent movement if game is paused
-    switch (e.key) {
-        case 'ArrowUp': inputDir = { x: 0, y: -1 }; break;
-        case 'ArrowDown': inputDir = { x: 0, y: 1 }; break;
-        case 'ArrowLeft': inputDir = { x: -1, y: 0 }; break;
-        case 'ArrowRight': inputDir = { x: 1, y: 0 }; break;
-    }
-});
-
+// Variables for gesture detection
 let touchStartX = 0;
 let touchStartY = 0;
+let touchEndX = 0;
+let touchEndY = 0;
 
-// Track touch start position
-window.addEventListener('touchstart', (e) => {
-    // Get touch start position
-    touchStartX = e.touches[0].clientX;
-    touchStartY = e.touches[0].clientY;
-});
+const swipeThreshold = 50; // Minimum swipe distance to trigger movement
 
-// Track touch end position and detect swipe direction
-window.addEventListener('touchend', (e) => {
-    let touchEndX = e.changedTouches[0].clientX;
-    let touchEndY = e.changedTouches[0].clientY;
+// Add touch event listeners for swipe gestures
+board.addEventListener('touchstart', (event) => {
+    // Get initial touch position
+    touchStartX = event.touches[0].clientX;
+    touchStartY = event.touches[0].clientY;
+}, false);
 
-    let diffX = touchEndX - touchStartX;
-    let diffY = touchEndY - touchStartY;
+board.addEventListener('touchmove', (event) => {
+    // Prevent scrolling during touch move
+    event.preventDefault();
+}, false);
 
-    // Check for swipe direction
-    if (Math.abs(diffX) > Math.abs(diffY)) {
+board.addEventListener('touchend', (event) => {
+    // Get the end touch position
+    touchEndX = event.changedTouches[0].clientX;
+    touchEndY = event.changedTouches[0].clientY;
+
+    // Determine the swipe direction
+    handleSwipeGesture();
+}, false);
+
+// Function to handle swipe gestures and set the snake's direction
+function handleSwipeGesture() {
+    let swipeDistanceX = touchEndX - touchStartX;
+    let swipeDistanceY = touchEndY - touchStartY;
+
+    if (Math.abs(swipeDistanceX) > Math.abs(swipeDistanceY) && Math.abs(swipeDistanceX) > swipeThreshold) {
         // Horizontal swipe
-        if (diffX > 0) {
+        if (swipeDistanceX > 0 && inputDir.x !== -1) {
             inputDir = { x: 1, y: 0 }; // Right
-        } else {
+        } else if (swipeDistanceX < 0 && inputDir.x !== 1) {
             inputDir = { x: -1, y: 0 }; // Left
         }
-    } else {
+    } else if (Math.abs(swipeDistanceY) > Math.abs(swipeDistanceX) && Math.abs(swipeDistanceY) > swipeThreshold) {
         // Vertical swipe
-        if (diffY > 0) {
+        if (swipeDistanceY > 0 && inputDir.y !== -1) {
             inputDir = { x: 0, y: 1 }; // Down
-        } else {
+        } else if (swipeDistanceY < 0 && inputDir.y !== 1) {
             inputDir = { x: 0, y: -1 }; // Up
         }
     }
-});
-if (Math.random() < growthPowerupFrequency) {
-    growthPowerup = generateGrowthPowerup();
 }
-speed += 2;
-setTimeout(() => speed -= 2, 5000); // Reset speed after 5 seconds
-// Game start logic
-restartGame();
+
+
+// Initialize the game
+main(performance.now());
