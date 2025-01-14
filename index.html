@@ -17,7 +17,6 @@
                 <div id="levelBox">Level: 1</div>
                 <div id="timerBox">Time: 60s</div>
                 <div id="livesBox">Lives: 3</div>
-
             </div>
             <div class="actions">
                 <button id="pause">Pause</button>
@@ -25,13 +24,28 @@
                 <button id="theme">Change Theme</button>
                 <button id="soundToggle">Sound On</button>
             </div>
+
+            <button class="hamburger" id="hamburgerBtn">
+                <div class="bar"></div>
+                <div class="bar"></div>
+                <div class="bar"></div>
+            </button>
+
             <select id="difficulty">
                 <option value="easy">Easy</option>
                 <option value="medium">Medium</option>
                 <option value="hard">Hard</option>
             </select>
+
+            <div id="gameOverScreen" class="game-over-screen">
+                <div class="game-over-text">Game Over!</div>
+                <div class="final-score">Your Score: <span id="finalScore"></span></div>
+                <div id="particles"></div> <!-- Particle container -->
+                <button id="restartBtn" class="restart-btn">Restart</button>
+            </div>
         </header>
         <div id="board"></div>
-        <script src="js/index.js"></script>
+    </div>
+    <script src="js/index.js"></script>
 </body>
 </html>
