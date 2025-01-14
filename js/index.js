@@ -12,6 +12,10 @@ let obstacles = [{ x: 8, y: 8 }, { x: 12, y: 14 }];
 let currentTheme = "light";
 let timer = 60; // Timer countdown in seconds
 let level = 1; // Level system
+let growthPowerup = null; // Tracks the position of the growth power-up
+let growthPowerupFrequency = 0.1; // 10% chance of appearing when food is eaten
+let growthMultiplier = 3; // How many segments the snake grows
+
 
 // DOM Elements
 const board = document.getElementById('board');
@@ -22,6 +26,14 @@ const livesBox = document.getElementById('livesBox');
 const restartBtn = document.getElementById('restart');
 const pauseBtn = document.getElementById('pause');
 const themeBtn = document.getElementById('theme');
+
+// Hamburger menu toggle functionality
+const hamburger = document.querySelector('.hamburger');
+const actions = document.querySelector('.actions');
+
+hamburger.addEventListener('click', () => {
+    actions.classList.toggle('show'); // Toggle visibility of buttons
+});
 
 // High Score Handling
 let hiscore = localStorage.getItem("hiscore") || 0;
@@ -104,6 +116,22 @@ document.getElementById('difficulty').addEventListener('change', (e) => {
     resetGameForNewDifficulty();
 });
 
+function generateGrowthPowerup() {
+    let newPowerup;
+    do {
+        newPowerup = {
+            x: Math.floor(Math.random() * 20),
+            y: Math.floor(Math.random() * 20),
+        };
+    } while (
+        snakeArr.some(seg => seg.x === newPowerup.x && seg.y === newPowerup.y) ||
+        obstacles.some(obs => obs.x === newPowerup.x && obs.y === newPowerup.y) ||
+        (food.x === newPowerup.x && food.y === newPowerup.y)
+    );
+    return newPowerup;
+}
+
+
 // Reset game for new difficulty
 function resetGameForNewDifficulty() {
     speed = currentSettings.speed;
@@ -133,27 +161,8 @@ function generateObstacles(level) {
     return newObstacles;
 }
 
-// Function to restart the game
-function restartGame() {
-    inputDir = { x: 0, y: 0 };
-    speed = 8;
-    score = 0;
-    lives = 3; // Reset lives
-    isPaused = false;
-    timer = 600; // Reset timer
-    level = 1; // Reset level
-    snakeArr = [{ x: 10, y: 10 }]; // Reset snake
-    food = { x: Math.floor(Math.random() * 20), y: Math.floor(Math.random() * 20) }; // Reset food
-    obstacles = [{ x: 8, y: 8 }, { x: 12, y: 14 }]; // Reset obstacles
-    powerup = null; // Reset power-ups
 
-    scoreBox.textContent = "Score: " + score; // Update score display
-    timerBox.textContent = "Time: " + timer + "s"; // Update timer display
-    updateLivesDisplay(); // Update lives display
-
-    renderBoard(); // Force render of game state when restarting
-    main(performance.now()); // Restart game loop
-}
+// }
 
 // Function to toggle theme
 function toggleTheme() {
@@ -195,10 +204,12 @@ function gameEngine() {
     if (isCollide()) {
         lives--;
         updateLivesDisplay();
+        
         if (lives === 0) {
             alert("Game Over! Your Score: " + score);
             location.reload();
         }
+        
         snakeArr = [{ x: 10, y: 10 }];
         inputDir = { x: 0, y: 0 };
         return;
@@ -241,6 +252,148 @@ function gameEngine() {
     snakeArr[0].y += inputDir.y;
 
     renderBoard();
+}
+
+function gameOver() {
+    document.getElementById('finalScore').textContent = score;
+
+    const gameOverScreen = document.getElementById('gameOverScreen');
+    gameOverScreen.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+
+    if (growthPowerup && snakeArr[0].x === growthPowerup.x && snakeArr[0].y === growthPowerup.y) {
+        for (let i = 0; i < growthMultiplier; i++) {
+            snakeArr.unshift({ ...snakeArr[0] });
+        }
+        growthPowerup = null;
+    
+        score += 10;
+        scoreBox.textContent = "Score: " + score;
+    
+        // Trigger particle effect at the powerup position
+        generateParticles({
+            x: growthPowerup.x * 20, // Adjust to your grid size
+            y: growthPowerup.y * 20,
+        });
+    
+        if (score > hiscore) {
+            hiscore = score;
+            localStorage.setItem("hiscore", hiscore);
+            hiscoreBox.textContent = "HiScore: " + hiscore;
+        }
+    }    
+}    
+
+function generateParticles() {
+    const particlesContainer = document.getElementById('particles');
+    const numParticles = 30;
+
+    // Clear any previous particles
+    particlesContainer.innerHTML = '';
+
+    for (let i = 0; i < numParticles; i++) {
+        const particle = document.createElement('div');
+        particle.classList.add('particle');
+
+        // Randomize position
+        particle.style.left = `${Math.random() * window.innerWidth}px`;
+        particle.style.top = `${Math.random() * window.innerHeight}px`;
+
+        // Randomize size
+        particle.style.width = `${Math.random() * 10 + 5}px`;
+        particle.style.height = `${Math.random() * 10 + 5}px`;
+
+        // Add animation delay for a natural spread
+        particle.style.animationDelay = `${Math.random() * 0.5}s`;
+
+        // Append particle to the container
+        particlesContainer.appendChild(particle);
+
+        // Automatically remove the particle after animation ends
+        setTimeout(() => particle.remove(), 1000); // Matches animation duration
+    }
+}
+
+// Function to remove particles explicitly if needed
+function removeParticles() {
+    const particlesContainer = document.getElementById('particles');
+    particlesContainer.innerHTML = ''; // Clear all particles
+}
+
+// Trigger particle effect at Game Over
+function gameOver() {
+    // Display Game Over screen
+    const gameOverScreen = document.getElementById('gameOverScreen');
+    gameOverScreen.style.display = 'flex';
+
+    // Prevent game interaction
+    isPaused = true;
+    window.removeEventListener('keydown', handleMovement);
+
+    // Generate particles
+    generateParticles();
+
+    // Set restart button to reset the game
+    document.getElementById('restartBtn').addEventListener('click', restartGame);
+}
+
+// Call this function to remove past particles explicitly
+function clearParticles() {
+    const particlesContainer = document.getElementById('particles');
+    particlesContainer.innerHTML = '';
+}
+// Function to restart the game
+function restartGame() {
+    // Reset all game variables and states
+    inputDir = { x: 0, y: 0 };
+    score = 0;
+    lives = 3;
+    isPaused = false;
+    timer = 600;
+    level = 1;
+    snakeArr = [{ x: 10, y: 10 }];
+    food = generateFood();
+    obstacles = generateObstacles(level);
+
+    // Reset DOM elements
+    scoreBox.textContent = "Score: " + score;
+    timerBox.textContent = "Time: " + timer + "s";
+    updateLivesDisplay();
+    renderBoard();
+
+    // Hide the Game Over screen and restart the game loop
+    document.getElementById('gameOverScreen').style.display = 'none';
+    document.body.style.overflow = 'auto'; // Re-enable scrolling
+    main(performance.now()); // Start the game loop
+}
+
+// Function to handle movement (event listener already exists)
+function handleMovement(e) {
+    if (isPaused) return; // Prevent movement if game is paused
+    switch (e.key) {
+        case 'ArrowUp': inputDir = { x: 0, y: -1 }; break;
+        case 'ArrowDown': inputDir = { x: 0, y: 1 }; break;
+        case 'ArrowLeft': inputDir = { x: -1, y: 0 }; break;
+        case 'ArrowRight': inputDir = { x: 1, y: 0 }; break;
+    }
+}
+
+if (growthPowerup && snakeArr[0].x === growthPowerup.x && snakeArr[0].y === growthPowerup.y) {
+    // Snake consumes the growth power-up
+    for (let i = 0; i < growthMultiplier; i++) {
+        snakeArr.unshift({ ...snakeArr[0] }); // Add multiple segments
+    }
+    growthPowerup = null; // Remove the power-up from the board
+
+    // Optional: Increase score or speed as a reward
+    score += 10;
+    scoreBox.textContent = "Score: " + score;
+
+    if (score > hiscore) {
+        hiscore = score;
+        localStorage.setItem("hiscore", hiscore);
+        hiscoreBox.textContent = "HiScore: " + hiscore;
+    }
 }
 
 // Function to render the game elements on the board
@@ -366,7 +519,10 @@ window.addEventListener('touchend', (e) => {
         }
     }
 });
-
-
+if (Math.random() < growthPowerupFrequency) {
+    growthPowerup = generateGrowthPowerup();
+}
+speed += 2;
+setTimeout(() => speed -= 2, 5000); // Reset speed after 5 seconds
 // Game start logic
 restartGame();
